@@ -5,4 +5,5 @@ const authController = require('./../controllers/authController');
 
 router.post("/room/new",authController.protect,chatController.addRoom);
 
+router.get("/room/all",authController.protect,chatController.rooms);
 module.exports = router;
