@@ -59,6 +59,7 @@ exports.login = async (req, res, next) => {
     }
     createSendToken(doc, 200, res);
   };
+
   exports.getMe = async (req, res, next) => {
     try{
     const account = await User.findById(req.userId);
@@ -69,5 +70,29 @@ exports.login = async (req, res, next) => {
       }
       next(err);
     }
+  };
+
+  exports.protect = async (req, res, next) => {
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+    if (!token) {
+      const err = new Error("Pleaselogin.");
+      err.statusCode = 401;
+      return next(err);
+    }
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      const err = new Error("Token is not valid");
+      err.statusCode = 401;
+      return next(err);
+    }
+    req.userId = user._id;
+    next();
   };
   
