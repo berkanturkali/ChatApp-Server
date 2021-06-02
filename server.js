@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 const socketio = require("./socket");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
-const roomHelper = require('./utils/joinRoom');
+const roomHelper = require("./utils/joinRoom");
+const User = require("./model/userModel");
+const Room = require("./model/roomModel");
+const Message = require("./model/messageModel");
 const app = require("./app");
 const DB = process.env.DATABASE;
 
@@ -21,16 +24,26 @@ const server = app.listen(port, () => {
 });
 
 const io = socketio.init(server);
- 
-io.on("connection",(socket)=>{
+
+io.on("connection", (socket) => {
   console.log("User connected");
 
-  socket.on("roomToJoin",room =>{
-      roomHelper.joinRoom(socket,room);
+  socket.on("roomToJoin", (room) => {
+    roomHelper.joinRoom(socket, room);
   });
 
-  socket.on("messageToServer",(msg)=>{
+  socket.on("messageToServer", async (msg) => {
     const roomTitle = Array.from(socket.rooms)[1];
-    io.to(roomTitle).emit("messageToClient",msg)
-  })
-})
+    let message = JSON.parse(msg);
+    const sender = await User.find({ email: message.sender });
+    const room = await Room.findOne({ name: message.room });
+
+    const newMessage = Message({
+      message: message.message,
+      sender: sender._id,
+      room: room._id,
+    });
+    await newMessage.save();
+    io.to(roomTitle).emit("messageToClient", message);
+  });
+});

@@ -13,7 +13,8 @@ const signToken = (id) => {
     document.password = undefined;
     res.status(statusCode).json({
       token,
-      email:document.email
+      email:document.email,
+      fullname:`${document.firstname} ${document.lastname}`
     });  
   };
 
