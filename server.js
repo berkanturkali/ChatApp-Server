@@ -35,6 +35,13 @@ io.on("connection", (socket) => {
     roomHelper.joinRoom(socket, room);    
   });
 
+  socket.on("leaveEvent",(room)=>{
+    socket.leave(room);
+    io.to(room).emit("leaveEvent",{
+      type:"leave",
+      content:`${socket.fullname} has left`
+    })
+  })
   socket.on("messageToServer", async (msg) => {
     const roomTitle = Array.from(socket.rooms)[1];    
     let message = JSON.parse(msg);
