@@ -27,23 +27,32 @@ const io = socketio.init(server);
 
 io.on("connection", (socket) => {
   console.log("User connected");
+  socket.on("setUser",(fullname)=>{
+    socket.fullname = fullname
+  })
 
   socket.on("roomToJoin", (room) => {
-    roomHelper.joinRoom(socket, room);
+    roomHelper.joinRoom(socket, room);    
   });
 
   socket.on("messageToServer", async (msg) => {
-    const roomTitle = Array.from(socket.rooms)[1];
+    const roomTitle = Array.from(socket.rooms)[1];    
     let message = JSON.parse(msg);
-    const sender = await User.find({ email: message.sender });
+    const sender = await User.findOne({ email: message.sender });
     const room = await Room.findOne({ name: message.room });
-
+    
     const newMessage = Message({
       message: message.message,
       sender: sender._id,
       room: room._id,
+      createdAt:message.createdAt
     });
     await newMessage.save();
+    message = {
+      ...message,
+      sender:socket.fullname
+    }
+    console.log(message);
     io.to(roomTitle).emit("messageToClient", message);
   });
 });
