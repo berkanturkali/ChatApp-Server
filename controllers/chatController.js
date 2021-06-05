@@ -1,9 +1,39 @@
 const Room = require("./../model/roomModel");
 const Message = require("./../model/messageModel");
+const multer = require("multer");
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images/rooms");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    const err = new Error("Not an image!Please upload only images", 400);
+    err.statusCode = 400;
+    cb(err, false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadRoomPhoto = upload.single("image");
 
 exports.addRoom = async (req, res, next) => {
   try {
-    const name = req.body.name;
+    let image="";
+    if(req.file) image = req.file.filename;    
+    const {name} = JSON.parse(req.body.room);
+    console.log(name);
     const doc = await Room.findOne({ name });
     if (doc) {
       const err = new Error("Room already exists");
@@ -13,6 +43,7 @@ exports.addRoom = async (req, res, next) => {
     const newRoom = new Room({
       name,
       createdBy: req.userId,
+      image
     });
 
     await newRoom.save();

@@ -8,7 +8,7 @@ app.use(helmet());
 if (process.env.NODE_ENV === "development") {
     app.use(morgan("dev"));
   }
-
+  app.use('/api/v1',express.static(`${__dirname}/public`));
   app.use(
     express.json({
       limit: "10kb",

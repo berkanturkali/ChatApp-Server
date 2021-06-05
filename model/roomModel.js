@@ -9,6 +9,10 @@ const roomSchema = new Schema({
     createdBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'
+    },
+    image:{
+        type:String,
+        default:""
     }
 });
 
