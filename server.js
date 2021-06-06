@@ -35,12 +35,14 @@ io.on("connection", (socket) => {
     roomHelper.joinRoom(socket, room);    
   });
 
-  socket.on("leaveEvent",(room)=>{
+  socket.on("leaveEvent",async(room)=>{
     socket.leave(room);
     io.to(room).emit("leaveEvent",{
       type:"leave",
       content:`${socket.fullname} has left`
     })
+    const clients = await io.in(room).allSockets();
+    io.in(room).emit('updateMembers',Array.from(clients).length);
   })
   socket.on("messageToServer", async (msg) => {
     const roomTitle = Array.from(socket.rooms)[1];    
@@ -59,7 +61,6 @@ io.on("connection", (socket) => {
       ...message,
       sender:socket.fullname
     }
-    console.log(message);
     io.to(roomTitle).emit("messageToClient", message);
   });
 });

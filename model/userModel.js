@@ -22,7 +22,10 @@ const userSchema = new Schema({
   },
   interests: [String],
   photo: String,
-  aboutMe:String,
+  aboutMe:{
+    type:String,
+    default:""
+  }
 });
 
 userSchema.pre("save",async function (next){

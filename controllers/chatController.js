@@ -1,6 +1,7 @@
 const Room = require("./../model/roomModel");
 const Message = require("./../model/messageModel");
 const multer = require("multer");
+const io = require('./../socket');
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -75,11 +76,14 @@ exports.history = async (req, res, next) => {
     Message.find({ room: doc._id })
       .populate("sender", { firstname: 1,lastname:1, _id: 0 })
       .lean()
-      .exec(function (err, doc) {
+      .exec( async function (err, doc) {
         doc.map((obj) => {
           obj.sender = `${obj.sender.firstname} ${obj.sender.lastname}`;
           return obj;
         });
+        const socket =  io.getIO();
+        const clients = await socket.in(room).allSockets();      
+        socket.to(room).emit('updateMembers',Array.from(clients).length);
         res.status(200).json(doc);
       });
   } catch (err) {

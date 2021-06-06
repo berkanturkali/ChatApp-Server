@@ -20,7 +20,7 @@ const signToken = (id) => {
 
 exports.signup = async (req, res, next) => {
   try {
-    const { firstname, lastname, email, password, interests, photo } = req.body;
+    const { firstname, lastname, email, password, interests, photo,aboutMe } = req.body;
     const alreadyExists = await User.findOne({ email });
     if (alreadyExists) {
       const err = new Error("Email already exists");
@@ -34,6 +34,7 @@ exports.signup = async (req, res, next) => {
       password,
       interests,
       photo,
+      aboutMe
     });
     await user.save();
     res.status(201).send("Success");
