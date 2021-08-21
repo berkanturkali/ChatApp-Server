@@ -10,13 +10,17 @@ const messageSchema = new Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'
     },
+    receiver:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'User'
+    },
     room:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Room'
     },
     createdAt:{
         type:Number
-    }
+    },
 });
 
 module.exports = mongoose.model('Message',messageSchema);

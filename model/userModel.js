@@ -25,6 +25,10 @@ const userSchema = new Schema({
   aboutMe:{
     type:String,
     default:""
+  },
+  online:{
+    type:Boolean,
+    default:false
   }
 });
 

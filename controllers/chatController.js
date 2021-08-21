@@ -1,7 +1,9 @@
 const Room = require("./../model/roomModel");
 const Message = require("./../model/messageModel");
 const multer = require("multer");
-const io = require('./../socket');
+const io = require("./../socket");
+const mongoose = require("mongoose");
+const User = require("./../model/userModel");
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -31,9 +33,9 @@ exports.uploadRoomPhoto = upload.single("image");
 
 exports.addRoom = async (req, res, next) => {
   try {
-    let image="";
-    if(req.file) image = req.file.filename;    
-    const {name} = JSON.parse(req.body.room);
+    let image = "";
+    if (req.file) image = req.file.filename;
+    const { name } = JSON.parse(req.body.room);
     console.log(name);
     const doc = await Room.findOne({ name });
     if (doc) {
@@ -44,7 +46,7 @@ exports.addRoom = async (req, res, next) => {
     const newRoom = new Room({
       name,
       createdBy: req.userId,
-      image
+      image,
     });
 
     await newRoom.save();
@@ -73,20 +75,21 @@ exports.history = async (req, res, next) => {
   try {
     const room = req.params.room;
     const doc = await Room.findOne({ name: room });
-    Message.find({ room: doc._id })
-      .populate("sender", { firstname: 1,lastname:1, _id: 0 })
-      .lean()
-      .exec( async function (err, doc) {
-        doc.map((obj) => {
-          obj.sender = `${obj.sender.firstname} ${obj.sender.lastname}`;
-          return obj;
+      Message.find({ room: doc._id })
+        .populate("sender", { firstname: 1, lastname: 1, _id: 0 })
+        .lean()
+        .exec(async function (err, doc) {
+          doc.map((obj) => {
+            obj.sender = `${obj.sender.firstname} ${obj.sender.lastname}`;
+            return obj;
+          });
+          const socket = io.getIO();
+          const clients = await socket.in(room).allSockets();
+          socket.to(room).emit("updateMembers", Array.from(clients).length);
+          res.status(200).json(doc);
         });
-        const socket =  io.getIO();
-        const clients = await socket.in(room).allSockets();      
-        socket.to(room).emit('updateMembers',Array.from(clients).length);
-        res.status(200).json(doc);
-      });
-  } catch (err) {
+    }
+   catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
