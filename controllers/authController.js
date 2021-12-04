@@ -20,10 +20,10 @@ const signToken = (id) => {
 
 exports.signup = async (req, res, next) => {
   try {
-    const { firstname, lastname, email, password, interests, photo,aboutMe } = req.body;
+    const { firstname, lastname, email, password } = req.body;
     const alreadyExists = await User.findOne({ email });
     if (alreadyExists) {
-      const err = new Error("Email already exists");
+      const err = new Error("User already exists");
       err.statusCode = 409;
       return next(err);
     }
@@ -31,10 +31,7 @@ exports.signup = async (req, res, next) => {
       firstname,
       lastname,
       email,
-      password,
-      interests,
-      photo,
-      aboutMe
+      password
     });
     await user.save();
     res.status(201).send("Success");
@@ -60,18 +57,6 @@ exports.login = async (req, res, next) => {
       return next(err);
     }
     createSendToken(doc, 200, res);
-  };
-
-  exports.getMe = async (req, res, next) => {
-    try{
-    const account = await User.findById(req.userId);
-    res.status(200).json(account);
-    }catch(err){
-      if(!err.statusCode){
-        err.statusCode = 500;
-      }
-      next(err);
-    }
   };
 
   exports.protect = async (req, res, next) => {

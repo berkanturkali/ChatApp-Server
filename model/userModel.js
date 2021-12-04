@@ -19,16 +19,6 @@ const userSchema = new Schema({
     type: String,
     required: true,
     select:false
-  },
-  interests: [String],
-  photo: String,
-  aboutMe:{
-    type:String,
-    default:""
-  },
-  online:{
-    type:Boolean,
-    default:false
   }
 });
 

@@ -50,6 +50,7 @@ exports.addRoom = async (req, res, next) => {
     });
 
     await newRoom.save();
+    io.getIO().emit('update',true);
     res.status(201).send(`${name} room created successfully`);
   } catch (err) {
     if (!err.statusCode) {
@@ -75,24 +76,26 @@ exports.history = async (req, res, next) => {
   try {
     const room = req.params.room;
     const doc = await Room.findOne({ name: room });
-      Message.find({ room: doc._id })
-        .populate("sender", { firstname: 1, lastname: 1, _id: 0 })
-        .lean()
-        .exec(async function (err, doc) {
-          doc.map((obj) => {
-            obj.sender = `${obj.sender.firstname} ${obj.sender.lastname}`;
-            return obj;
-          });
-          const socket = io.getIO();
-          const clients = await socket.in(room).allSockets();
-          socket.to(room).emit("updateMembers", Array.from(clients).length);
-          res.status(200).json(doc);
-        });
+     Message.find({ room: doc._id })
+         .populate("sender", { firstname: 1, lastname: 1, _id: 0 })
+         .lean()
+         .exec(async function (err, doc) {
+           doc.map((obj) => {
+             console.log(obj);
+             obj.sender = `${obj.sender.firstname} ${obj.sender.lastname}`;
+             return obj;
+           });
+           const socket = io.getIO();
+           const clients = await socket.in(room).allSockets();
+           socket.to(room).emit("updateMembers", Array.from(clients).length);
+           res.status(200).json(doc);
+         });
     }
    catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
+    console.log(err);
     next(err);
   }
 };

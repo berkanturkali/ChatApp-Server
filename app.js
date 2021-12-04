@@ -17,9 +17,11 @@ if (process.env.NODE_ENV === "development") {
 
   const authRouter = require("./routes/authRoutes");
   const chatRouter = require("./routes/chatRoutes");
+  const userRouter = require("./routes/userRoutes");
 
   app.use("/api/v1/account",authRouter);
   app.use("/api/v1/chat",chatRouter);
+  app.use("/api/v1/user",userRouter);
 
   app.use((err,req,res,next) =>{
   const status = err.statusCode || 500;

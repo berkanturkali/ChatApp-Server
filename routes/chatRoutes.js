@@ -6,8 +6,9 @@ const authController = require('./../controllers/authController');
 
 router.post("/room/new",authController.protect,chatController.uploadRoomPhoto,chatController.addRoom);
 
-router.get("/room/all",authController.protect,chatController.rooms);
+router.get("/room/rooms",authController.protect,chatController.rooms);
 
-router.get("/room/:room",authController.protect,chatController.history);
+router.get("/room/history/:room",authController.protect,chatController.history);
+
 
 module.exports = router;

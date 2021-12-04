@@ -73,15 +73,12 @@ io.on("connection", (socket) => {
 async function createNewMessage(msg, socket) {
   let message = JSON.parse(msg);
   try {
-    let receiver;
     const sender = await User.findOne({ email: message.sender });
-    if (message.receiver) receiver = await User.findOne({ email: message.receiver });
     const room = await Room.findOne({ name: message.room });
     const newMessage = Message({
       message: message.message,
       sender: sender._id,
-      receiver: (!receiver) ? room._id : receiver._id,
-      room: (message.isPrivate) ?  receiver._id : room._id ,
+      room:room._id ,
       createdAt: message.createdAt
     })
     await newMessage.save();
