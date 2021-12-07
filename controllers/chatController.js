@@ -77,7 +77,7 @@ exports.history = async (req, res, next) => {
     const room = req.params.room;
     const doc = await Room.findOne({ name: room });
      Message.find({ room: doc._id })
-         .populate("sender", { firstname: 1, lastname: 1, _id: 0 })
+         .populate("sender", { firstname: 1, lastname: 1 })
          .lean()
          .exec(async function (err, doc) {
            doc.map((obj) => {

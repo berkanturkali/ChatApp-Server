@@ -68,23 +68,41 @@ io.on("connection", (socket) => {
     const message = await createNewMessage(msg, socket);
     io.to(roomTitle).emit("messageToClient", message);
   });
+  socket.on("unsend",async(id) =>{
+      const deleted = await unsend(id);   
+      if(deleted){
+        io.to(Array.from(socket.rooms)[1]).emit("deletedMessageId",id);
+      }else{
+        io.to(Array.from(socket.rooms)[1]).emit("deletedMessageId","-1");
+      }
+  })
 });
+
+async function unsend(id){
+  try{
+    await Message.findByIdAndDelete(id);
+    return true;
+  }catch(err){
+    console.log(err);
+    return false;
+  }
+}
 
 async function createNewMessage(msg, socket) {
   let message = JSON.parse(msg);
   try {
     const sender = await User.findOne({ email: message.sender });
     const room = await Room.findOne({ name: message.room });
-    const newMessage = Message({
+    const newMessage = await Message({
       message: message.message,
       sender: sender._id,
       room:room._id ,
       createdAt: message.createdAt
-    })
-    await newMessage.save();
+    }).save();
     message = {
       ...message,
-      sender: socket.fullname
+      sender: socket.fullname,
+      _id:newMessage._id    
     }
     return message;
   } catch (err) {
